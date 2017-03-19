@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Brick Breaker</title>
+  <script src="processing.js"></script>
+</head>
+<body>
+<h1> Brick Breaker </h1>
+<script type="text/processing" data-processing-target="processing-canvas">
+size(400,400);
+//variables
+{var notiFont = createFont ("monospace", 8);
+var selectPos = 0;
+var paddleX = null;
+var paddleY = null;
+var bounceDir = 0;
+var selectedScreen = "menu";
+//paddlecolor[0], unlock_a[1], unlock_b[2], coins[3], hiscore_class[4], hiscore_power[5], hiscore_infi[6], achieve_score[7]
+var saveCode = ["black", false, false, 0, 0, 0, 0, 0];
+var totalScore = saveCode[3]/5 + saveCode[4] + saveCode[5]*2 + saveCode[6]/2 + saveCode[7];
+saveCode.push(totalScore);
+var selectedPaddle = saveCode[0];}
+//thing functions
+var Ball = function (x, y, diameter, ySpeed, xSpeed, checkMenu) {
+  this.x = x;
+  this.y = y;
+  this.diameter = diameter;
+  this.ySpeed = ySpeed;
+  this.xSpeed = xSpeed;
+  this.checkMenu = checkMenu;
+};
+var drawBall = function (ball) {
+  fill (0);
+  ellipse (ball.x, ball.y, ball.diameter, ball.diameter);
+  ball.x += ball.xSpeed;
+  ball.y += ball.ySpeed;
+  if (ball.x < 0 + ball.diameter/2 || ball.x > 400 - ball.diameter/2) {
+      ball.xSpeed = -ball.xSpeed;
+  }
+  if (ball.y < 0 + ball.diameter/2) {
+      ball.ySpeed = -ball.ySpeed;
+  }
+  if (ball.checkMenu === true) {
+      if (ball.y > 400 - ball.diameter/2) {
+          ball.ySpeed = -ball.ySpeed;
+      }
+  }
+};
+var Paddle = function (x, y, r, b, g, length, height) {
+  this.x = x;
+  this.y = y;
+  this.red = r;
+  this.blue = b;
+  this.green = g;
+  this.length = length;
+  this.height = height;
+};
+var drawPaddle = function (paddle, ball) {
+  rectMode (CORNER);
+  noStroke ();
+  fill (paddle.red, paddle.blue, paddle.green, 120);
+  rect (paddle.x, paddle.y, paddle.length, paddle.height, 5);
+  noStroke ();
+  fill (paddle.red, paddle.blue, paddle.green, 130);
+  rect (paddle.x + 5, paddle.y + 2.5, paddle.length - 10, paddle.height - 5, 2);
+  fill (paddle.red, paddle.blue, paddle.green, 255);
+  rect (paddle.x + 10, paddle.y + 5, paddle.length - 20, paddle.height - 8, 1);
+
+};
+var coin = function (x, y) {
+  fill (225, 160, 0);
+  ellipse (x, y, 15, 15);
+  fill (225, 210, 0);
+  ellipse (x, y, 9, 9);
+  textAlign (CENTER);
+  text (saveCode[3], x + 20, y + 7);
+  textAlign (LEFT, BASELINE);
+};
+var Brick = function (x, y, width, height, HP, coinChance, visible) {
+  this.x = x;
+  this.y = y;
+  this.width = width;
+  this.height = height;
+  this.HP = HP;
+  this.coinChance = coinChance;
+  this.visible = visible;
+};
+var drawBrick = function (brick, ball) {
+  if (brick.visible === true) {
+      rectMode (CENTER);
+      rect (brick.x, brick.y, brick.width, brick.height, 3);
+      if (brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2) {
+          bounceDir = floor (random (0, 2));
+          if (bounceDir === 2) {
+              bounceDir = floor (random (0, 2));
+          }
+          if (bounceDir === 0) {
+              ball.xSpeed = -ball.xSpeed;
+          }
+          if (bounceDir === 1) {
+              ball.ySpeed = -ball.ySpeed;
+          }
+          brick.HP -= 1;
+      }
+  }
+  if (brick.HP === 0) {
+      brick.visible = false;
+  }
+  drawBall (ball);
+};
+//new
+{var paddleRed = new Paddle (paddleX, paddleY, 255, 0, 0, 50, 10);
+var paddleGreen = new Paddle (paddleX, paddleY, 0, 255, 0, 50, 10);
+var paddleBlack = new Paddle (paddleX, paddleY, 0, 0, 0, 50, 10);
+var paddleYellow = new Paddle (paddleX, paddleY, 255, 255, 0, 50, 10);
+var menuBall = new Ball (10, 10, 12, random (1, 5), random (4, 7), true);
+var testBrick = new Brick (200, 200, 200, 100, 5, 0, true);
+}
+//interaction
+var menuButton = function (x, y, width, height, t, changeTo, sl) {
+  if (sl === true) {
+      if (mouseY >= y - (height/2) && mouseY <= y + (height/2)) {
+          fill (100, 100, 100, 100);
+      } else {
+          noFill();
+      }
+  }
+  else if (sl === false) {
+      if (mouseY >= y - (height/2) && mouseY <= y + (height/2) && mouseX >= x - (width/2) && mouseX <= x + (width/2)) {
+          fill (100, 100, 100, 100);
+      } else {
+          noFill();
+      }
+  }
+  rectMode (CENTER);
+  noStroke ();
+  rect (x, y, width, height, 3);
+  textAlign (CENTER, CENTER);
+  fill (0);
+  var menuFont = createFont ("monospace", height);
+  textFont (menuFont);
+  text (t, x, y);
+  if (sl === true) {
+      if (mouseY >= y - (height/2) && mouseY <= y + (height/2) && mousePressed) {
+          selectedScreen = changeTo;
+      }
+  }
+  else if (sl === false) {
+      if (mouseY >= y - (height/2) && mouseY <= y + (height/2) && mouseX >= x - (width/2) && mouseX <= x + (width/2) && mousePressed) {
+          selectedScreen = changeTo;
+      }
+  }
+};
+var selectButton = function (x, y, width, height, t, changeTo) {
+  if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+      fill (100, 100, 100, 100);
+  } else {
+      noFill();
+  }
+  stroke (0);
+  rectMode (CORNER);
+  rect (x, y, width, height, 5);
+  textAlign (LEFT, BASELINE);
+  fill (0);
+  var paddleFont = createFont ("monospace", 10);
+  textFont (paddleFont);
+  text (t, x + 20, y + 100);
+  if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height && mousePressed) {
+      selectedPaddle = changeTo;
+  }
+};
+var menu = function() {
+  if (selectedScreen === "menu") {
+      coin (10, 10);
+      menuButton (200, 250, 4000, 18, "Play", "gameModes", true);
+      menuButton (200, 275, 4000, 18, "Paddle", "choosePaddle", true);
+      menuButton (200, 325, 4000, 18, "Achievements", "achievements", true);
+      menuButton (200, 350, 4000, 18, "Save Code", "saveCode", true);
+      menuButton (200, 300, 4000, 18, "How To Play", "howTo", true);
+      drawBall (menuBall);
+      var f = createFont ("monospace", 25);
+      textFont (f);
+      textAlign (CENTER, CENTER);
+      text ("Brick Breaker", 200, 100);
+  }
+  if (selectedScreen === "choosePaddle"){
+      var selectBlack = new Paddle (selectPos + 100, 200, 0, 0, 0, 50, 10);
+      drawPaddle (selectBlack);
+      selectButton (selectPos + 75, 150, 100, 125, "Black Paddle \n (Default)", "black");
+      var selectRed = new Paddle (selectPos + 250, 200, 255, 0, 0, 50, 10);
+      drawPaddle (selectRed);
+      selectButton (selectPos + 225, 150, 100, 125, "Red Paddle", "red");
+      var selectGreen = new Paddle (selectPos + 400, 200, 0, 255, 0, 50, 10);
+      drawPaddle (selectGreen);
+      selectButton (selectPos + 375, 150, 100, 125, "Green Paddle", "green");
+      var selectYellow = new Paddle (selectPos + 550, 200, 255, 255, 0, 50, 10);
+      drawPaddle (selectYellow);
+      selectButton (selectPos + 525, 150, 100, 125, "Yellow Paddle", "yellow");
+      rectMode (CENTER);
+      textAlign (CENTER, CENTER);
+      stroke (0);
+      noFill ();
+      rect (350, 350, 50, 50, 5);
+      line (344, 340, 359, 350);
+      line (344, 360, 359, 350);
+      rect (50, 350, 50, 50, 5);
+      line (43, 350, 58, 340);
+      line (43, 350, 58, 360);
+      if (mouseX >= 325 && mouseX <= 375 && mouseY >= 325 && mouseY <= 375) {
+          noStroke ();
+          fill (100, 100, 100, 100);
+          rect (350, 350, 50, 50, 5);
+          textFont (notiFont);
+          fill (0);
+          text ("Press and hold to scroll. Or use arrow keys.", 200, 385);
+      }
+      if (mouseX >= 325 && mouseX <= 375 && mouseY >= 325 && mouseY <= 375 && mousePressed && selectPos >= -280 || keyPressed && keyCode === RIGHT && selectPos >= -280) {
+          selectPos -= 4;
+      }
+      if (mouseX >= 25 && mouseX <= 75 && mouseY >= 325 && mouseY <= 375) {
+          noStroke ();
+          fill (100, 100, 100, 100);
+          rect (50, 350, 50, 50, 5);
+          textFont (notiFont);
+          fill (0);
+          text ("Press and hold to scroll. Or use arrow keys.", 200, 385);
+      }
+      if (mouseX >= 25 && mouseX <= 75 && mouseY >= 325 && mouseY <= 375 && mousePressed&& selectPos <= 0 || keyPressed && keyCode === LEFT && selectPos <= 0) {
+          selectPos += 4;
+      }
+      if (mouseY >= 370) {
+          textFont (notiFont);
+          fill (0);
+          text ("Press and hold to arrows to scroll. Or use arrow keys.", 200, 385);
+      }
+      if (mouseX >= 165 && mouseX <= 235 && mouseY <= 70 && mouseY >= 40) {
+          textFont (notiFont);
+          fill (0);
+          text ("Your selected paddle.", 200, 385);
+      }
+      if (selectedPaddle === "black") {
+          paddleBlack.x = 175;
+          paddleBlack.y = 50;
+          drawPaddle (paddleBlack);
+      }
+      else if (selectedPaddle === "red") {
+          paddleRed.x = 175;
+          paddleRed.y = 50;
+          drawPaddle (paddleRed);
+      }
+      else if (selectedPaddle === "green") {
+          paddleGreen.x = 175;
+          paddleGreen.y = 50;
+          drawPaddle (paddleGreen);
+      }
+      else if (selectedPaddle === "yellow") {
+          paddleYellow.x = 175;
+          paddleYellow.y = 50;
+          drawPaddle (paddleYellow);
+      }
+      rectMode (CENTER);
+      textAlign (CENTER, CENTER);
+      noFill ();
+      stroke (0);
+      rect (60, 20, 90, 20, 3);
+      menuButton (60, 20, 90, 20, "Menu", "menu", false);
+  }
+  if (selectedScreen === "gameModes") {
+      noFill ();
+      stroke (0);
+      rectMode (CENTER);
+      rect (60, 20, 90, 20, 3);
+      menuButton (60, 20, 90, 20, "Menu", "menu", false);
+      drawBrick (testBrick, menuBall);
+  }
+  if (selectedScreen === "class") {}
+  if (selectedScreen === "power") {}
+  if (selectedScreen === "infi") {}
+  if (selectedScreen === "saveCode") {
+      var f = createFont ("monospace", 12);
+      fill (0);
+      textAlign (CENTER, CENTER);
+      textFont (f);
+      text (saveCode, 200, 200);
+      noFill ();
+      stroke (0);
+      rectMode (CENTER);
+      rect (60, 20, 90, 20, 3);
+      menuButton (60, 20, 90, 20, "Menu", "menu", false);
+      noFill ();
+      if (mouseX >= 145 && mouseX <= 255 && mouseY >= 240 && mouseY <= 260) {
+          fill (100, 100, 100, 100);
+      }
+      mouseReleased = function () {
+          if (mouseX >= 145 && mouseX <= 255 && mouseY >= 240 && mouseY <= 260 && selectedScreen === "saveCode") {
+              for (var i = 0; i < 1; i++) {
+                  println (saveCode);
+              }
+          }
+      };
+      stroke (0);
+      rect (200, 250, 110, 20, 3);
+      fill (0);
+      textFont (f);
+      text ("Print Save Code", 200, 250);
+  }
+  if (selectedScreen === "achievements") {
+      noFill ();
+      stroke (0);
+      rect (60, 20, 90, 20, 3);
+      menuButton (60, 20, 90, 20, "Menu", "menu", false);
+  }
+  if (selectedScreen === "howTo") {
+     noFill ();
+     stroke (0);
+     rectMode (CENTER);
+     rect (60, 20, 90, 20, 3);
+     menuButton (60, 20, 90, 20, "Menu", "menu", false);
+     menuButton (200, 375, 4000, 18, "Play", "gameModes", true);
+     fill (0);
+     textSize (12);
+     var tutorial = "In classic mode, the game acts like\nany other game of brick breaker.\nUse the mouse to control the paddle,\nand don't let the ball drop!\n\n\nPower mode can make the game easier or harder.\nRandom powerups pop up, and if you can get\nyour ball to hit them,you gain the powerup!\nCareful though,some powerups are negative!";
+     text (tutorial, 200, 200);
+  }
+};
+draw = function() {
+  background (255);
+  menu ();
+};
+ </script>
+ <canvas id="processing-canvas"> </canvas>
+</body>
+</html>
