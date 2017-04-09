@@ -19,7 +19,8 @@ var selectedScreen = "menu";
 var saveCode = ["black", false, false, 0, 0, 0, 0, 0];
 var totalScore = saveCode[3]/5 + saveCode[4] + saveCode[5]*2 + saveCode[6]/2 + saveCode[7];
 saveCode.push(totalScore);
-var selectedPaddle = saveCode[0];}
+var selectedPaddle = saveCode[0];
+var brickArray = [];}
 //thing functions
 var Ball = function (x, y, diameter, ySpeed, xSpeed, checkMenu) {
   this.x = x;
@@ -90,23 +91,20 @@ var drawBrick = function (brick, ball) {
       rectMode (CENTER);
       rect (brick.x, brick.y, brick.width, brick.height, 3);
       if (brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2) {
-          bounceDir = floor (random (0, 2));
-          if (bounceDir === 2) {
-              bounceDir = floor (random (0, 2));
-          }
-          if (bounceDir === 0) {
-              ball.xSpeed = -ball.xSpeed;
-          }
-          if (bounceDir === 1) {
+          if (brick.x + brick.width/2 === ball.x - ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2
+          || brick.x - brick.width/2 === ball.x + ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2) {
               ball.ySpeed = -ball.ySpeed;
+          }
+          if (brick.y + brick.height/2 === ball.y - ball.diameter/2 && brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2
+          || brick.y - brick.height/2 === ball.y + ball.diameter/2 && brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2) {
+              ball.xSpeed = -ball.xSpeed;
           }
           brick.HP -= 1;
       }
   }
   if (brick.HP === 0) {
       brick.visible = false;
-  }
-  drawBall (ball);
+  };
 };
 //new
 {var paddleRed = new Paddle (paddleX, paddleY, 255, 0, 0, 50, 10);
@@ -115,6 +113,12 @@ var paddleBlack = new Paddle (paddleX, paddleY, 0, 0, 0, 50, 10);
 var paddleYellow = new Paddle (paddleX, paddleY, 255, 255, 0, 50, 10);
 var menuBall = new Ball (10, 10, 12, random (1, 5), random (4, 7), true);
 var testBrick = new Brick (200, 200, 200, 100, 5, 0, true);
+}
+for (var j = 0; j < 5; j++) {
+  for (var i = 0; i < 9; i ++ ) {
+    var brick = new Brick ((i*50)-25, (j*12.5)-6.25, 50, 12.5, 1, 0, true);
+    brickArray.push (brick);
+  }
 }
 //interaction
 var menuButton = function (x, y, width, height, t, changeTo, sl) {
@@ -271,7 +275,11 @@ var menu = function() {
       rectMode (CENTER);
       rect (60, 20, 90, 20, 3);
       menuButton (60, 20, 90, 20, "Menu", "menu", false);
-      drawBrick (testBrick, menuBall);
+      drawBall (menuBall);
+      //drawBrick (testBrick, menuBall);
+      for (var i = 0; i < brickArray.length; i++) {
+        drawBrick (brickArray [i], menuBall);
+      }
   }
   if (selectedScreen === "class") {}
   if (selectedScreen === "power") {}
@@ -319,7 +327,7 @@ var menu = function() {
      menuButton (200, 375, 4000, 18, "Play", "gameModes", true);
      fill (0);
      textSize (12);
-     var tutorial = "In classic mode, the game acts like\nany other game of brick breaker.\nUse the mouse to control the paddle,\nand don't let the ball drop!\n\n\nPower mode can make the game easier or harder.\nRandom powerups pop up, and if you can get\nyour ball to hit them,you gain the powerup!\nCareful though,some powerups are negative!";
+     var tutorial = "In classic mode, the game acts like\nany other game of brick breaker.\nUse the mouse to control the paddle,\nand don't let the ball drop!\n\n\nPower mode can make the game easier or harder.\nRandom powerups pop up, and if you can get\nyour ball to hit them,you gain the powerup!\nCareful though,some powerups are negative!\n\n\nInfinite mode resets the bricks once\nyou run out, and some bricks have health.\nOtherwise, the this game mode is the same as the others!";
      text (tutorial, 200, 200);
   }
 };
