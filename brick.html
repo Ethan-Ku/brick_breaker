@@ -66,6 +66,22 @@ var drawPaddle = function (paddle, ball) {
   rect (paddle.x + 5, paddle.y + 2.5, paddle.length - 10, paddle.height - 5, 2);
   fill (paddle.red, paddle.blue, paddle.green, 255);
   rect (paddle.x + 10, paddle.y + 5, paddle.length - 20, paddle.height - 8, 1);
+  ball.top = ball.y - ball.diameter/2;
+  ball.bottom = ball.y + ball.diameter/2;
+  ball.right = ball.x + ball.diameter/2;
+  ball.left = ball.x - ball.diameter/2;
+  paddle.right = paddle.x + paddle.length;
+  paddle.left = paddle.x;
+  paddle.top = paddle.y;
+  paddle.bottom = paddle.y + paddle.height;
+  if (paddle.right >= ball.left && paddle.bottom >= ball.top && paddle.left <= ball.right && paddle.top <= ball.bottom) {
+    if (ball.y >= paddle.bottom || ball.y <= paddle.top) {
+        ball.ySpeed = -ball.ySpeed;
+    }
+    else if (ball.x >= paddle.right || ball.x <= paddle.left) {
+        ball.xSpeed = -ball.xSpeed;
+    }
+  }
 
 };
 var coin = function (x, y) {
@@ -87,16 +103,22 @@ var Brick = function (x, y, width, height, HP, coinChance, visible) {
   this.visible = visible;
 };
 var drawBrick = function (brick, ball) {
+  brick.top = brick.y - brick.height/2;
+  brick.bottom = brick.y + brick.height/2;
+  brick.right = brick.x + brick.width/2;
+  brick.left = brick.x - brick.width/2;
+  ball.top = ball.y - ball.diameter/2;
+  ball.bottom = ball.y + ball.diameter/2;
+  ball.right = ball.x + ball.diameter/2;
+  ball.left = ball.x - ball.diameter/2;
   if (brick.visible === true) {
       rectMode (CENTER);
       rect (brick.x, brick.y, brick.width, brick.height, 3);
-      if (brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2) {
-          if (brick.x + brick.width/2 === ball.x - ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2
-          || brick.x - brick.width/2 === ball.x + ball.diameter/2 && brick.y + brick.height/2 >= ball.y - ball.diameter/2 && brick.y - brick.height/2 <= ball.y + ball.diameter/2) {
+      if (brick.right >= ball.left && brick.bottom >= ball.top && brick.left <= ball.right && brick.top <= ball.bottom) {
+          if (ball.y >= brick.bottom || ball.y <= brick.top) {
               ball.ySpeed = -ball.ySpeed;
           }
-          if (brick.y + brick.height/2 === ball.y - ball.diameter/2 && brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2
-          || brick.y - brick.height/2 === ball.y + ball.diameter/2 && brick.x + brick.width/2 >= ball.x - ball.diameter/2 && brick.x - brick.width/2 <= ball.x + ball.diameter/2) {
+          else if (ball.x >= brick.right || ball.x <= brick.left) {
               ball.xSpeed = -ball.xSpeed;
           }
           brick.HP -= 1;
@@ -113,8 +135,9 @@ var paddleBlack = new Paddle (paddleX, paddleY, 0, 0, 0, 50, 10);
 var paddleYellow = new Paddle (paddleX, paddleY, 255, 255, 0, 50, 10);
 var menuBall = new Ball (10, 10, 12, random (1, 5), random (4, 7), true);
 var testBrick = new Brick (200, 200, 200, 100, 5, 0, true);
+var testPaddle = new Paddle (mouseX - 25, 300, 255, 255, 0, 50, 10);
 }
-for (var j = 0; j < 5; j++) {
+for (var j = 1; j < 6; j++) {
   for (var i = 0; i < 9; i ++ ) {
     var brick = new Brick ((i*50)-25, (j*12.5)-6.25, 50, 12.5, 1, 0, true);
     brickArray.push (brick);
@@ -273,13 +296,15 @@ var menu = function() {
       noFill ();
       stroke (0);
       rectMode (CENTER);
-      rect (60, 20, 90, 20, 3);
-      menuButton (60, 20, 90, 20, "Menu", "menu", false);
+      rect (60, 380, 90, 20, 3);
+      menuButton (60, 380, 90, 20, "Menu", "menu", false);
       drawBall (menuBall);
       //drawBrick (testBrick, menuBall);
       for (var i = 0; i < brickArray.length; i++) {
         drawBrick (brickArray [i], menuBall);
       }
+      drawPaddle (testPaddle, menuBall);
+      testPaddle.x = mouseX - 25;
   }
   if (selectedScreen === "class") {}
   if (selectedScreen === "power") {}
